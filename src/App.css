@@ -1,3 +1,44 @@
+body{
+  background-image: url(./assets/admin.jpg);
+  background-repeat: no-repeat;
+  background-position: fixed;
+  background-size: 100vw 100vh;
+  font-style: 'roboto sans-serif';
+}
+.landing{
+  display: flex;
+  flex-direction: row;
+  margin-top: 100px;
+  justify-content: space-evenly;
+}
+.landingTitle{
+  font-size: 35px;
+  color: white;
+}
+.landingbutton{
+  padding: 20px;
+  background-color: transparent;
+  cursor: pointer;
+  width: 300px;
+  border-radius: 20px;
+  border: 10px solid yellow;
+  font-size: 35px;
+  font-weight: 800;
+  color: yellow;
+  transition: all 0.5s;
+}
+.landingbutton:hover{
+  background-color: yellow;
+  color: black;
+  transform: scale(1.025);
+}
+
+@media screen and (max-width:'500px'){
+  .landing{
+    flex-direction: column;
+    display: none;
+  }
+}
 .App {
   text-align: center;
 }
@@ -36,3 +77,4 @@
     transform: rotate(360deg);
   }
 }
+
