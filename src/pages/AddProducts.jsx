@@ -44,6 +44,7 @@ const AddProducts = () => {
           if(subcat.err){
               makeToast("error", subcat.err);
           }else{
+              setSpecifications([]);
               setSubCategories(subcat);
               setSubCategory(subcat[0]._id);
               getSpecifications(subcat[0]._id)
@@ -155,7 +156,8 @@ const AddProducts = () => {
             break;
         case "subCategory":
             setSubCategory(event.target.value);
-            getSpecificationBySubCategory(event.target.value);
+            setSpecifications([]);
+            getSpecifications(event.target.value);
             break;
         default:
       }
@@ -346,29 +348,7 @@ const AddProducts = () => {
                 </Button>
               </label>
             </div>
-              {/* <Typography
-                sx={{ fontSize: "16px", padding: "5px", fontWeight: "600" }}
-              >
-                Specifications
-              </Typography>
-              <FormControl sx={{ marginTop: "20px" }}>
-                <InputLabel id="demo-simple-select-label">Seller</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  label="Clothing Design/ Style"
-                  value={seller}
-                  onChange={(e) => handleChange(e, "category")}
-                >
-                  {cat.map((cato) => (
-                  <MenuItem value="Seller01">Seller01</MenuItem>
-                  <MenuItem value="Primary">Primary</MenuItem>
-                  <MenuItem value="Primary">Primary</MenuItem>
-                  <MenuItem value="Primary">Primary</MenuItem>
-                   ))} 
-                </Select>
-              </FormControl> */}
-
+              
               <Button
                 variant="contained"
                 sx={{ margin: "20px auto", width: "90%" }}

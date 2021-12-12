@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import Header from "../component/Header";
 import Button from "@mui/material/Button";
@@ -6,43 +6,34 @@ import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import CircularProgress from "@mui/material/CircularProgress";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import Typography from "@mui/material/Typography";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import makeToast from "../Toaster";
-import Avatar from "@mui/material/Avatar";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import EditIcon from "@mui/icons-material/Edit";
 import { withRouter } from "react-router-dom/cjs/react-router-dom.min";
-import { createCategory, deleteCategory, getCategorylist } from "../api/inventory";
+import { getCategoryById, updateCategory } from "../api/inventory";
 import { API } from "../config";
 
-const ManageCategories = (props) => {
+const UpdateCategory = ({match:{params:{categoryId}}}) => {
   const [title, setTitle] = useState("");
-  const [loading, setLoading] = React.useState(true);
   const [addLoading, setAddLoading] = useState(false);
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState([]);
   const [slug, setSlug] = useState("");
   const [showImage, setShowImage] = useState("");
   const [image, setImage] = useState(null);
-  const getCategories = () => {
-    getCategorylist()
+  const getCategory = useCallback((id) => {
+    getCategoryById(id)
       .then((data) => {
-        setCategory(data);
-        setLoading(false);
+        setTitle(data.name);
+        setSlug(data.slug);
+        setDescription(data.description);
+        setShowImage(`${API}/category/photo/${data._id}?${Date.now()}`)
       })
       .catch((err) => {
         makeToast("error", err);
-        setLoading(false);
       });
-  };
+  },[]);
   useEffect(() => {
-    getCategories();
-  }, []);
+    getCategory(categoryId);
+  }, [getCategory,categoryId]);
   const handleChange = (event, name) => {
     switch (name) {
       case "title":
@@ -71,14 +62,6 @@ const ManageCategories = (props) => {
       makeToast("warning", "please select your file");
     }
   };
-  const deleteCat = (id) => {
-    deleteCategory(id).then(response => {
-      makeToast("success","Category deleted");
-      getCategories();
-    }).catch((err) => {
-      makeToast("error",err);
-    })
-  }
   const handleSubmit = (event) => {
     setAddLoading(true);
     event.preventDefault();
@@ -86,28 +69,41 @@ const ManageCategories = (props) => {
     data.set("name", title);
     data.set("slug", slug);
     data.set("description", description);
-    data.set("photo", image);
-    createCategory(data)
-      .then((response) => {
-        if (response._id) {
-          makeToast("success", `${title}, Category Created`);
-          setTitle("");
-          setDescription("");
-          setSlug("");
-          setImage(null);
-          getCategories();
-        } else {
-          makeToast("error", response.error);
+    if(image){
+      data.set("photo", image);
+    }
+    updateCategory(categoryId,data).then(response => {
+        if(response.error){
+            makeToast("error",response.error);
+        }else{
+            makeToast("success","Updated Successfully.");
         }
         setAddLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+        getCategory(categoryId);
+    }).catch(err => {
+        makeToast("error", err);
+        setAddLoading(false);
+    })
+    // createCategory(data)
+    //   .then((response) => {
+    //     if (response._id) {
+    //       makeToast("success", `${title}, Category Created`);
+    //       setTitle("");
+    //       setDescription("");
+    //       setSlug("");
+    //       setImage(null);
+    //     } else {
+    //       makeToast("error", response.error);
+    //     }
+    //     setAddLoading(false);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   };
   return (
     <Header>
-      <h2 style={{ textAlign: "center" }}>CREATE CATEGORY</h2>
+      <h2 style={{ textAlign: "center" }}>UPDATE CATEGORY</h2>
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -186,53 +182,11 @@ const ManageCategories = (props) => {
           sx={{ mt: 3, mb: 2 }}
           startIcon={<AddBusinessIcon />}
         >
-          {addLoading ? "ADDING..." : "ADD"} CATEGORY
+          {addLoading ? "UPDATING..." : "UPDATE"} CATEGORY
         </Button>
       </Box>
-
-      {category.length > 0 && (
-        <h2 style={{ textAlign: "center" }}>CATEGORIES</h2>
-      )}
-      {loading && (
-        <div style={{ textAlign: "center", marginTop: 40 }}>
-          <CircularProgress />
-        </div>
-      )}
-      <div style={{ maxWidth: "700px", margin: " 0 auto" }}>
-        {category.map((cat, idx) => (
-          <Accordion key={cat._id}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id={`panel${idx}a-header`}
-            >
-              <Typography>
-                <b>{cat.name}</b>
-              </Typography>
-              <Button
-                variant="inherit"
-                startIcon={<EditIcon />}
-                onClick={() =>
-                  props.history.push(`/update-categories/${cat._id}`)
-                }
-              ></Button>
-              <Avatar alt={cat.name} src={`${API}/category/photo/${cat._id}?${Date.now()}`} />
-              <Button
-                variant="inherit"
-                startIcon={<DeleteForeverIcon />}
-                onClick={() => {
-                  deleteCat(cat._id);
-                }}
-              ></Button>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>{cat.description}</Typography>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </div>
     </Header>
   );
 };
 
-export default connect(null)(withRouter(ManageCategories));
+export default connect(null)(withRouter(UpdateCategory));

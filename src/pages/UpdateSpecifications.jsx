@@ -19,10 +19,10 @@ import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import makeToast from "../Toaster";
-import { createSpecification, deleteSpecification, getAllSpecifications, getSubCategorylist } from "../api/inventory";
+import { deleteSpecification, getAllSpecifications, getSpecificationById, getSubCategorylist, updateSpecification } from "../api/inventory";
 import { withRouter } from "react-router-dom/cjs/react-router-dom.min";
 
-function ManageSpecification({history}) {
+function UpdateSpecification({history,match:{params:{specificationId}}}) {
   
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -56,6 +56,20 @@ function ManageSpecification({history}) {
           console.log(err);
       })
   }
+  const getSpecById = (id) => {
+      getSpecificationById(id).then(response => {
+          if(response._id){
+              setTitle(response.name);
+              setOPtions(response.options);
+              setSubCategory(response.subCategory);
+              setLoading(false);
+          }else{
+              makeToast("error","Something went Wrong");
+          }
+      }).catch(err =>{
+          console.log(err);
+      })
+  }
   const getSubCategories = () => {
     getSubCategorylist()
       .then((data) => {
@@ -70,9 +84,10 @@ function ManageSpecification({history}) {
   };
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+    getSpecById(specificationId);
     getSubCategories();
     getSpecs();
-  }, []);
+  }, [specificationId]);
   
 
   const handleChange = (event, name) => {
@@ -93,9 +108,9 @@ function ManageSpecification({history}) {
           options:options,
           subCategory:subCategory
       }
-      createSpecification(data).then(response => {
+      updateSpecification(specificationId,data).then(response => {
           if(response._id){
-              makeToast("success",response.name+" Specification Created");
+              makeToast("success",response.name+" Specification Updated");
               getSpecs();
           }else{
               makeToast("error", response.error);
@@ -140,7 +155,7 @@ function ManageSpecification({history}) {
           }}
         >
           <TableContainer component={Paper}>
-                <h2 style={{ padding: "5px" }}>Create New Specification</h2>
+                <h2 style={{ padding: "5px" }}>Update Specification</h2>
               
             <hr />
             <div
@@ -242,4 +257,4 @@ function ManageSpecification({history}) {
   );
 }
 
-export default withRouter(ManageSpecification);
+export default withRouter(UpdateSpecification);
