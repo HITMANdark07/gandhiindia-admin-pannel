@@ -13,25 +13,45 @@ import { Button, Typography } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { isAuthenticated } from "../auth/index";
 import makeToast from "../Toaster";
-import { getCategories, getSubCategoriesbyCategory } from '../api/inventory';
+import { getCategories, getSpecificationBySubCategory, getSubCategoriesbyCategory,uploadImages } from '../api/inventory';
 import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
+import { listSeller } from '../api/seller';
+import { API } from '../config';
 
 const AddProducts = () => {
 
     const [categories, setCategories] = React.useState([]);
     const [subCategories, setSubCategories] = React.useState([]);
-    const getSubCategories = (id) => {
-        getSubCategoriesbyCategory({category:id}).then(subcat => {
-            if(subcat.err){
-                makeToast("error", subcat.err);
-            }else{
-                setSubCategories(subcat);
-                setSubCategory(subcat[0]._id);
-            }
-        }).catch(err =>{
-            console.log(err);
+    
+    const getSpecifications = React.useCallback((id) => {
+      getSpecificationBySubCategory(id).then(response => {
+        response.forEach((res,idx) => {
+          res.options=res.options.split(",");
         })
-    }
+        setSpecifications(response);
+      })
+    },[])
+    const getSellers = React.useCallback(() => {
+      listSeller().then(data => {
+        if(data){
+          setSellers(data);
+          setSeller(data[0]._id);
+        }
+      })
+    },[]);
+    const getSubCategories = React.useCallback((id) => {
+      getSubCategoriesbyCategory({category:id}).then(subcat => {
+          if(subcat.err){
+              makeToast("error", subcat.err);
+          }else{
+              setSubCategories(subcat);
+              setSubCategory(subcat[0]._id);
+              getSpecifications(subcat[0]._id)
+          }
+      }).catch(err =>{
+          console.log(err);
+      })
+  },[getSpecifications]);
     const allCats = React.useCallback(() => {
         getCategories().then(data => {
         if(data){
@@ -42,13 +62,15 @@ const AddProducts = () => {
           makeToast("error","Something Went Wrong");
         }
       }) 
-    },[]);
+    },[getSubCategories]);
     React.useEffect(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       allCats();
-    }, [allCats])
+      getSellers();
+    }, [allCats,getSellers])
     const [seller, setSeller] = React.useState("");
     const [category, setCategory] = React.useState("");
+    const [sellers, setSellers] = React.useState([]);
     const [subCategory, setSubCategory] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [regPrice, setRegPrice] =React.useState("");
@@ -56,27 +78,40 @@ const AddProducts = () => {
     const [title, setTitle] = React.useState("");
     const [quantity, setQuantity] = React.useState("");
     const [loading, setLoading] = React.useState(false);
+    const [specifications, setSpecifications] = React.useState([]);
     const [image, setImage] = React.useState([]);
-    const [showimage, setShowImage] = React.useState(
-      "https://thumbs.dreamstime.com/b/product-text-made-wooden-cube-white-background-181800372.jpg"
-    );
     const types = ["image/jpg", "image/jpeg", "image/png", "image/PNG"];
     const handleProductImg = (e) => {
       let selectedFile = e.target.files[0];
+      const data = new FormData();
       if (selectedFile) {
         if (selectedFile && types.includes(selectedFile.type)) {
-          setShowImage(URL.createObjectURL(selectedFile));
-          setImage(selectedFile);
+          data.set('photo',selectedFile);
+          uploadImages(data).then(response => {
+            if(response.message){
+              setImage((prev) => [...prev,response.id]);
+              makeToast("success",response.message);
+            }else{
+              makeToast("error", response.error);
+            }
+          })
         } else {
-          setImage(null);
+          makeToast("warning","please select correct image file");
         }
       } else {
-        console.log("please select your file");
+        makeToast("warning","please select your file");
       }
     };
     const clickSubmit = (event) => {
       event.preventDefault();
       setLoading(true);
+      const specs = [];
+      specifications.forEach((spc) => {
+        specs.push({
+          name:spc.name,
+          value:spc.options[0]
+        })
+      })
       const data = {
         category:category,
         subCategory:subCategory,
@@ -84,28 +119,14 @@ const AddProducts = () => {
         mrp:regPrice,
         price:salePrice,
         quantity:quantity, //
-        image:image, //
+        photo:image, //
         description: description,
+        specifications:specs,
         added_by:seller,
         status:1
       }
       console.log(data);
       makeToast("success","Running submit");
-    //   createProduct(data).then(response => {
-    //     if(response._id){
-    //       setLoading(false);
-    //       makeToast("success",`${response.name} product created`);
-    //       setTitle("");
-    //       setRegPrice("");
-    //       setSalePrice("");
-    //       setQuantity("");
-    //       setFullDesc("");
-    //       console.log(response);
-    //     }else{
-    //       setLoading(false);
-    //       makeToast("error", response.err);
-    //     }
-    //   })
     
     }
     const handleChange = (event, name) => {
@@ -131,6 +152,10 @@ const AddProducts = () => {
         case "category":
             setCategory(event.target.value);
             getSubCategories(event.target.value);
+            break;
+        case "subCategory":
+            setSubCategory(event.target.value);
+            getSpecificationBySubCategory(event.target.value);
             break;
         default:
       }
@@ -178,12 +203,9 @@ const AddProducts = () => {
                   value={seller}
                   onChange={(e) => handleChange(e, "seller")}
                 >
-                  {/* {cat.map((cato) => ( */}
-                  <MenuItem value="Seller01">Seller01</MenuItem>
-                  <MenuItem value="Seller02">Seller02</MenuItem>
-                  <MenuItem value="Seller03">Seller03</MenuItem>
-                  <MenuItem value="Seller04">Seller04</MenuItem>
-                  {/* ))} */}
+                  {sellers.map((seller) => (
+                  <MenuItem value={seller._id} key={seller._id}>{seller.email}</MenuItem>
+                  ))} 
                 </Select>
               </FormControl>
               <TextField
@@ -260,17 +282,52 @@ const AddProducts = () => {
                    ))} 
                 </Select>
               </FormControl>
+              {
+                specifications.map((spec,idx) => {
+                  return(
+                    <FormControl sx={{ marginTop: "20px" }} key={spec._id}>
+                    <InputLabel id="demo-simple-select-label">{spec.name}</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label={spec.name}
+                      value={spec.options[0]}
+                      onChange={(e) => {
+                        let specs = specifications;
+                        let index = spec.options.indexOf(e.target.value);
+                        let op0= spec.options[0];
+                        specs[idx].options[0] = e.target.value;
+                        specs[idx].options[index] = op0;
+                        setSpecifications([...specs]);
+                      }}
+                    >
+                      {spec.options.map((cato,idx) => (
+                      <MenuItem key={idx} name={cato} value={cato}>{cato}</MenuItem>
+                      ))} 
+                    </Select>
+                  </FormControl>
+                  )
+                })
+              }
             <Typography sx={{ padding: "10px", fontWeight: "600" }}>
               Product Image
             </Typography>
             <hr />
             <div style={{ display: "flex",flexDirection:'column', flexWrap: "wrap", padding: "12px" }}>
-            <img
-                  src={showimage}
-                  alt="sourceig"
-                  height="150px"
-                  width="250px"
-                />
+            <div style={{display:"flex",flexDirection:'row', flexWrap:'wrap', padding:'10px'}}>
+                {
+                  image.map((im) => (
+                    <img
+                    src={`${API}/image/photo/${im}`}
+                    alt="sourceig"
+                    key={im}
+                    style={{padding:'5px'}}
+                    height="150px"
+                    width="250px"
+                  />
+                  ))
+                }
+            </div>
               <label htmlFor="contained-button-file">
               <input
                   style={{ display: "none" }}

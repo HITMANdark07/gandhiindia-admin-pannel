@@ -7,6 +7,9 @@ import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
 import PrivateRoute from './auth/PrivateRoute';
 import AddProducts from './pages/AddProducts';
+import ManageCategories from './pages/ManageCategories';
+import ManageSubCategories from "./pages/ManageSubCategories";
+import ManageSpecification from './pages/ManageSpecification';
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
       <Route path="/signup" exact component={SignUp} />
       <Route path="/signin" exact component={SignIn} />
       <PrivateRoute path="/dashboard" exact component={Dashboard} />
+      <PrivateRoute path="/manage-categories" exact component={ManageCategories} />
+      <PrivateRoute path="/manage-sub-categories" exact component={ManageSubCategories} />
+      <PrivateRoute path="/manage-specification" exact component={ManageSpecification} />
       <PrivateRoute path="/add-products" exact component={AddProducts} />
     </Switch>
     </BrowserRouter>

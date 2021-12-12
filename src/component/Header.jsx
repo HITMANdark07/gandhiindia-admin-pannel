@@ -22,12 +22,13 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import Avatar from '@mui/material/Avatar';
 import logo from "../assets/logo.png";
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { toggleDrawer } from '../redux/drawer/drawer.action';
-import { signout } from '../auth';
+import { isAuthenticated, signout } from '../auth';
 import { withRouter } from 'react-router-dom/cjs/react-router-dom.min';
 const styles = {
   color:"black", textDecoration:"none"
@@ -134,32 +135,40 @@ const secondaryListItems = (
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Manage Products" />
+        <ListItemText primary="New Product" secondary="Add New Products" />
       </ListItem>
       </Link>
-      <Link to="/add-category" style={styles}>
+      <Link to="/manage-categories" style={styles}>
       <ListItem button>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Manage Category" />
+        <ListItemText primary="Categories" secondary="Manage Category" />
       </ListItem>
       </Link>
-      <Link to="/manage-orders" style={styles}>
+      <Link to="/manage-sub-categories" style={styles}>
       <ListItem button>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Manage Orders" />
+        <ListItemText primary="Sub-Categories" secondary="Manage Sub-category" />
+      </ListItem>
+      </Link>
+      <Link to="/manage-specification" style={styles}>
+      <ListItem button>
+        <ListItemIcon>
+          <AssignmentIcon />
+        </ListItemIcon>
+        <ListItemText primary="Specifications" secondary="Manage Specification" />
       </ListItem>
       </Link>
     </div>
   );
   return (
-    <ThemeProvider theme={mdTheme}>
+    <ThemeProvider theme={mdTheme} >
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
-        <AppBar position="absolute" open={open}>
+        <AppBar position="absolute" open={open} style={{  }}>
           <Toolbar
             sx={{
               pr: '24px', // keep right padding when drawer closed
@@ -177,6 +186,7 @@ const secondaryListItems = (
             >
               <MenuIcon />
             </IconButton>
+            <Avatar alt={isAuthenticated().admin.name} src="/static/images/avatar/1.jpg" />
             <Typography
               component="h1"
               variant="h6"
@@ -184,7 +194,6 @@ const secondaryListItems = (
               noWrap
               sx={{ flexGrow: 1 }}
             >
-            
             <AdminPanelSettingsIcon />
             ADMIN DASHBOARD
             </Typography>
@@ -230,40 +239,6 @@ const secondaryListItems = (
         >
           <Toolbar />
           {props.children}
-          {/* <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={8} lg={9}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  <Chart />
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  <Deposits />
-                </Paper>
-              </Grid>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <Orders />
-                </Paper>
-              </Grid>
-            </Grid>
-            <Copyright sx={{ pt: 4 }} />
-          </Container> */}
         </Box>
       </Box>
     </ThemeProvider>
