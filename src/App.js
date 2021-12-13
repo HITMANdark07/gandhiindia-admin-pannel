@@ -13,6 +13,13 @@ import ManageSpecification from './pages/ManageSpecification';
 import UpdateCategory from './pages/UpdateCategory';
 import UpdateSubCategory from './pages/UpdateSubCategory';
 import UpdateSpecifications from './pages/UpdateSpecifications';
+import UpdateProduct from './pages/UpdateProduct';
+import AllProducts from './pages/AllProducts';
+import Agents from './pages/Agents';
+import SellerPage from './pages/SellerPage';
+import ReportPage from './pages/ReportPage';
+import ManageOrders from './pages/ManageOrders';
+
 
 function App() {
   return (
@@ -28,7 +35,13 @@ function App() {
       <PrivateRoute path="/update-sub-category/:subcategoryId" exact component={UpdateSubCategory} />
       <PrivateRoute path="/manage-specification" exact component={ManageSpecification} />
       <PrivateRoute path="/update-specification/:specificationId" exact component={UpdateSpecifications} />
+      <PrivateRoute path="/all-products" exact component={AllProducts} />
+      <PrivateRoute path="/agents" exact component={Agents} />
+      <PrivateRoute path="/sellers" exact component={SellerPage} />
+      <PrivateRoute path="/reports" exact component={ReportPage} />
+      <PrivateRoute path="/orders" exact component={ManageOrders} />
       <PrivateRoute path="/add-products" exact component={AddProducts} />
+      <PrivateRoute path="/update-product/:productId" exact component={UpdateProduct} />
     </Switch>
     </BrowserRouter>
   );

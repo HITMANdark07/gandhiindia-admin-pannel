@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import Header from '../component/Header';
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
@@ -9,36 +9,70 @@ import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import CircularProgress from "@mui/material/CircularProgress";
 import InputLabel from "@mui/material/InputLabel";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { Button, Typography } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { isAuthenticated } from "../auth/index";
 import makeToast from "../Toaster";
-import { createProducts, getCategories, getSpecificationBySubCategory, getSubCategoriesbyCategory,uploadImages } from '../api/inventory';
-import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
-import { listSeller } from '../api/seller';
+import { updateProduct, getCategories, getProductById, getSpecificationBySubCategory, getSubCategoriesbyCategory,uploadImages } from '../api/inventory';
+import { Redirect } from 'react-router-dom';
 import { API } from '../config';
+import { withRouter } from 'react-router-dom';
+import { listSeller } from '../api/seller';
 
-const AddProducts = () => {
+const UpdateProduct = ({history,match:{params:{productId}}}) => {
 
     const [categories, setCategories] = React.useState([]);
     const [subCategories, setSubCategories] = React.useState([]);
-    
-    const getSpecifications = React.useCallback((id) => {
+    const [sellers, setSellers] = React.useState([]);
+    const [seller, setSeller] = React.useState("");
+    const [category, setCategory] = React.useState("");
+    const [subCategory, setSubCategory] = React.useState("");
+    const [description, setDescription] = React.useState("");
+    const [regPrice, setRegPrice] =React.useState("");
+    const [salePrice, setSalePrice] = React.useState("");
+    const [title, setTitle] = React.useState("");
+    const [quantity, setQuantity] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const [specifications, setSpecifications] = React.useState([]);
+    const [image, setImage] = React.useState([]);
+    const getSpecifications = React.useCallback((id,specs) => {
       getSpecificationBySubCategory(id).then(response => {
         response.forEach((res,idx) => {
           res.options=res.options.split(",");
+          if(specs[idx]){
+            let c = res.options.lastIndexOf(specs[idx].value);
+            if(c>0){
+                let temp = res.options[0];
+                res.options[0] =specs[idx].value;
+                res.options[c] = temp;
+            }
+          }
         })
         setSpecifications(response);
       })
-    },[])
-    const getSellers = React.useCallback(() => {
-      listSeller().then(data => {
-        if(data){
-          setSellers(data);
-          setSeller(data[0]._id);
-        }
-      })
     },[]);
+    const getPro = useCallback((id) => {
+        getProductById(id).then(response => {
+            if(response._id){
+                setTitle(response.name);
+                setDescription(response.description);
+                setRegPrice(response.mrp);
+                setSalePrice(response.price);
+                setQuantity(response.quantity);
+                setCategory(response.category);
+                setSubCategory(response.subCategory);
+                setSeller(response.added_by);
+                setImage(response.photo);
+                getSpecifications(response.subCategory,response.specifications);
+            }else{
+                makeToast("error", "Something went Wrong");
+            }
+        }).catch(err => {
+            console.log(err);
+        })
+    },[getSpecifications])
+
     const getSubCategories = React.useCallback((id) => {
       getSubCategoriesbyCategory({category:id}).then(subcat => {
           if(subcat.err){
@@ -47,12 +81,19 @@ const AddProducts = () => {
               setSpecifications([]);
               setSubCategories(subcat);
               setSubCategory(subcat[0]._id);
-              getSpecifications(subcat[0]._id)
+              getPro(productId);
           }
       }).catch(err =>{
           console.log(err);
       })
-  },[getSpecifications]);
+  },[productId,getPro]);
+  const getSellers = React.useCallback(() => {
+    listSeller().then(data => {
+      if(data){
+        setSellers(data);
+      }
+    })
+  },[]);
     const allCats = React.useCallback(() => {
         getCategories().then(data => {
         if(data){
@@ -66,21 +107,10 @@ const AddProducts = () => {
     },[getSubCategories]);
     React.useEffect(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      allCats();
       getSellers();
-    }, [allCats,getSellers])
-    const [seller, setSeller] = React.useState("");
-    const [category, setCategory] = React.useState("");
-    const [sellers, setSellers] = React.useState([]);
-    const [subCategory, setSubCategory] = React.useState("");
-    const [description, setDescription] = React.useState("");
-    const [regPrice, setRegPrice] =React.useState("");
-    const [salePrice, setSalePrice] = React.useState("");
-    const [title, setTitle] = React.useState("");
-    const [quantity, setQuantity] = React.useState("");
-    const [loading, setLoading] = React.useState(false);
-    const [specifications, setSpecifications] = React.useState([]);
-    const [image, setImage] = React.useState([]);
+      allCats();
+    }, [allCats, getSellers])
+    
     const types = ["image/jpg", "image/jpeg", "image/png", "image/PNG"];
     const handleProductImg = (e) => {
       let selectedFile = e.target.files[0];
@@ -105,7 +135,7 @@ const AddProducts = () => {
     };
     const clickSubmit = (event) => {
       event.preventDefault();
-      setLoading(true);
+    //   setLoading(true);
       const specs = [];
       specifications.forEach((spc) => {
         specs.push({
@@ -124,17 +154,19 @@ const AddProducts = () => {
         description: description,
         specifications:specs,
         added_by:seller,
-        status:1
+        status:0
       }
-      createProducts(data).then((response) => {
-        if(response._id){
-          makeToast("success",response.name+" created...")
-        }else{
-          makeToast("error",response.error);
-        }
-        setLoading(false);
+      updateProduct(productId,data).then(response => {
+          if(response._id){
+              makeToast("success", response.name+" Updated");
+              history.push("/all-products");
+          }else{
+              makeToast("error", response.error);
+          }
+          setLoading(false);
       }).catch(err => {
-        console.log(err);
+          console.log(err);
+          setLoading(false);
       })
     
     }
@@ -156,8 +188,8 @@ const AddProducts = () => {
               setQuantity(event.target.value);
               break;
         case "seller":
-            setSeller(event.target.value);
-            break;
+              setSeller(event.target.value);
+              break;
         case "category":
             setCategory(event.target.value);
             getSubCategories(event.target.value);
@@ -165,12 +197,12 @@ const AddProducts = () => {
         case "subCategory":
             setSubCategory(event.target.value);
             setSpecifications([]);
-            getSpecifications(event.target.value);
+            getSpecifications(event.target.value,specifications);
             break;
         default:
       }
     };
-
+    
     return (
         <Header>
             {!isAuthenticated() && <Redirect to="/sigin" />}
@@ -204,20 +236,20 @@ const AddProducts = () => {
                 margin: "20px",
               }}
             >
-              <FormControl sx={{ marginTop: "20px" }}>
-                <InputLabel id="demo-simple-select-label">Seller</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  label="Seller"
-                  value={seller}
-                  onChange={(e) => handleChange(e, "seller")}
-                >
-                  {sellers.map((seller) => (
-                  <MenuItem value={seller._id} key={seller._id}>{seller.email}</MenuItem>
-                  ))} 
-                </Select>
-              </FormControl>
+            <FormControl sx={{ marginTop: "20px" }}>
+            <InputLabel id="demo-simple-select-label">Seller</InputLabel>
+            <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                label="Seller"
+                value={seller}
+                onChange={(e) => handleChange(e, "seller")}
+            >
+                {sellers.map((seller) => (
+                <MenuItem value={seller._id} key={seller._id}>{seller.email}</MenuItem>
+                ))} 
+            </Select>
+            </FormControl>
               <TextField
                 id="standard-basic"
                 label="Product Name"
@@ -327,14 +359,19 @@ const AddProducts = () => {
             <div style={{display:"flex",flexDirection:'row', flexWrap:'wrap', padding:'10px'}}>
                 {
                   image.map((im) => (
+                    <div style={{display:'flex', flexDirection:'column'}} key={im}>
+                    <DeleteForeverIcon style={{ cursor:"pointer"}} color="secondary" onClick={() => {
+                        let ig = image.filter((ig) => ig!==im);
+                        setImage(ig);
+                    }} />
                     <img
                     src={`${API}/image/photo/${im}`}
                     alt="sourceig"
-                    key={im}
                     style={{padding:'5px'}}
                     height="150px"
                     width="250px"
                   />
+                    </div>
                   ))
                 }
             </div>
@@ -372,4 +409,4 @@ const AddProducts = () => {
     )
 }
 
-export default AddProducts;
+export default withRouter(UpdateProduct);

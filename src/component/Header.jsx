@@ -11,16 +11,16 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import Badge from '@mui/material/Badge';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ListItem from '@mui/material/ListItem';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PeopleIcon from '@mui/icons-material/People';
+import DataUsageIcon from '@mui/icons-material/DataUsage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import Avatar from '@mui/material/Avatar';
 import logo from "../assets/logo.png";
@@ -90,7 +90,7 @@ function Dashboard(props) {
   };
   const mainListItems = (
     <div>
-      <Link to="/shop"  style={styles}>
+      <Link to="/all-products"  style={styles}>
       <ListItem button >
         <ListItemIcon>
           <DashboardIcon />
@@ -98,14 +98,12 @@ function Dashboard(props) {
         <ListItemText primary="Products" />
       </ListItem>
       </Link>
-      <Link to="/cart" style={styles}>
+      <Link to="/sellers" style={styles}>
       <ListItem button>
         <ListItemIcon>
-          <Badge badgeContent={0} color="secondary" >
-          <ShoppingCartIcon />
-          </Badge>
+          <StorefrontIcon/>
         </ListItemIcon>
-        <ListItemText primary="Cart" />
+        <ListItemText primary="Sellers"  />
       </ListItem>
       </Link>
       <Link to="/agents" style={styles} >
@@ -113,7 +111,7 @@ function Dashboard(props) {
         <ListItemIcon>
           <PeopleIcon />
         </ListItemIcon>
-        <ListItemText primary="Agents" />
+        <ListItemText primary="Agents"  />
       </ListItem>
       </Link>
       <Link to="/reports" style={styles}>
@@ -121,7 +119,15 @@ function Dashboard(props) {
         <ListItemIcon>
           <BarChartIcon />
         </ListItemIcon>
-        <ListItemText primary="Reports" />
+        <ListItemText primary="Reports"  />
+      </ListItem>
+        </Link>
+        <Link to="/orders" style={styles}>
+      <ListItem button>
+        <ListItemIcon>
+          <DataUsageIcon />
+        </ListItemIcon>
+        <ListItemText primary="Orders"  />
       </ListItem>
         </Link>
     </div>

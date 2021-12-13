@@ -1,6 +1,69 @@
 import { isAuthenticated } from "../auth";
 import { API } from "../config";
 
+
+export const createProducts = (data) => {
+  return fetch(`${API}/admin/product/add/${isAuthenticated().admin._id}`,{
+    method:'POST',
+    headers:{
+      Accept:'application/json',
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${isAuthenticated().token}`
+    },
+    body:JSON.stringify(data)
+  }).then(response => {
+    return response.json();
+  }).catch((err) => {
+    console.log(err);
+  })
+}
+
+export const getProducts = () => {
+  return fetch(`${API}/admin/product-list/${isAuthenticated().admin._id}`,{
+    method:'GET',
+    headers:{
+      Accept:"application/json",
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${isAuthenticated().token}`
+    }
+  }).then(response => {
+    return response.json();
+  }).catch(err =>{
+    console.log(err);
+  })
+};
+
+
+export const getProductById = (id) => {
+  return fetch(`${API}/product/details/${id}`,{
+    method:"GET",
+    headers:{
+      Accept:'application/json',
+      "Content-Type":"application/json"
+    }
+  }).then(response => {
+    return response.json()
+  }).catch(err => {
+    console.log(err);
+  })
+}
+
+export const updateProduct = (id, data) =>{
+  return fetch(`${API}/admin/product/update/${id}/${isAuthenticated().admin._id}`,{
+    method:'PUT',
+    headers:{
+      Accept:"application/json",
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${isAuthenticated().token}`
+    },
+    body:JSON.stringify(data)
+  }).then(response => {
+    return response.json()
+  }).catch((err) => {
+    console.log(err);
+  })
+}
+
 export const getCategories = () => {
   return fetch(`${API}/category-list`, {
     method: "GET",

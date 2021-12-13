@@ -26,11 +26,16 @@ function Copyright(props) {
     </Typography>
   );
 }
-
 const theme = createTheme();
 
 function SignIn({history}) {
   const [loading, setLoading] = React.useState(false);
+  let req=null;
+
+  
+  React.useEffect(() => {
+    return () => req;
+  },[req]);
 
   const handleSubmitLogin = async(event) => {
     event.preventDefault();
@@ -40,7 +45,7 @@ function SignIn({history}) {
         email:data.get('email'),
         password:data.get('password')
     }
-    signin(formdata).then(response => {
+    req=signin(formdata).then(response => {
         if(response.err){
             makeToast("error",response.err);
         }else{
