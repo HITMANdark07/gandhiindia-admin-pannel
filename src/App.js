@@ -19,6 +19,7 @@ import Agents from './pages/Agents';
 import SellerPage from './pages/SellerPage';
 import ReportPage from './pages/ReportPage';
 import ManageOrders from './pages/ManageOrders';
+import VerificationPage from './pages/VerificationPage';
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
       <PrivateRoute path="/update-sub-category/:subcategoryId" exact component={UpdateSubCategory} />
       <PrivateRoute path="/manage-specification" exact component={ManageSpecification} />
       <PrivateRoute path="/update-specification/:specificationId" exact component={UpdateSpecifications} />
+      <PrivateRoute path="/seller/verification/:requestId" exact component={VerificationPage} />
       <PrivateRoute path="/all-products" exact component={AllProducts} />
       <PrivateRoute path="/agents" exact component={Agents} />
       <PrivateRoute path="/sellers" exact component={SellerPage} />
