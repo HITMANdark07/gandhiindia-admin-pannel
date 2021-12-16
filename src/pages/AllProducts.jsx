@@ -17,6 +17,7 @@ import Switch from '@mui/material/Switch';
 import { getProducts, updateProduct } from "../api/inventory";
 import { API } from "../config";
 import Avatar from "@mui/material/Avatar";
+import Checkbox from '@mui/material/Checkbox';
 import { withRouter } from "react-router-dom";
 import makeToast from "../Toaster";
 
@@ -93,6 +94,7 @@ const AllProducts = ({history}) => {
               <StyledTableCell>Product Name</StyledTableCell>
               <StyledTableCell>status</StyledTableCell>
               <StyledTableCell>sold</StyledTableCell>
+              <StyledTableCell>Featured</StyledTableCell>
               <StyledTableCell>price</StyledTableCell>
               <StyledTableCell>View</StyledTableCell>
             </TableRow>
@@ -130,7 +132,14 @@ const AllProducts = ({history}) => {
               </FormControl>
                 </StyledTableCell>
                 <StyledTableCell>{pro.sold}</StyledTableCell>
-                
+                <StyledTableCell><Checkbox checked={pro.featured===1 ? true : false} onClick={() => {
+                  updateProduct(pro._id,{...pro,featured:pro.featured===0 ? 1 : 0}).then((response => {
+                    makeToast("success",pro.name+" updated successfully");
+                    getProduct();
+                })).catch(err => {
+                    console.log(err);
+                })
+                }} /></StyledTableCell>
                 <StyledTableCell>₹{pro.price}/-</StyledTableCell>
                 <StyledTableCell>
                     <VisibilityIcon  style={{cursor:'pointer'}} onClick={() => {

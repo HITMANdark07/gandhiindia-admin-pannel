@@ -166,6 +166,7 @@ function VerificationPage({
                 <Button variant="contained" size="large"
                 onClick={() => {
                     verifySendMail(request).then((response) => {
+                        console.log(response);
                         if(response.message){
                             makeToast("success",response.message);
                         }else{
